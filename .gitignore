@@ -1,32 +1,50 @@
-# Python
+# ============================================================================
+#  Root .gitignore — covers Python backend + Node/Next.js frontend
+# ============================================================================
+
+# --- Secrets / environment --------------------------------------------------
+.env
+.env.*
+!.env.example
+*.local
+
+# --- Python -----------------------------------------------------------------
 __pycache__/
 *.py[cod]
 *.egg-info/
 .eggs/
 build/
 dist/
-
-# Virtual environments
 .venv/
 venv/
 env/
 ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.cover
 
-# Jupyter
-.ipynb_checkpoints/
+# --- Node / Next.js ---------------------------------------------------------
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Data / models (uncomment if you don't want to track these)
-# *.csv
-# *.pkl
-# *.h5
-
-# Environment / secrets
-.env
-*.local
-
-# OS / editor
+# --- Editors / OS -----------------------------------------------------------
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# --- Misc -------------------------------------------------------------------
+coverage/
+*.log
