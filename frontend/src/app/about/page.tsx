@@ -23,6 +23,16 @@ const STACK = [
   ['Tooling', 'pytest, ruff, mypy, ESLint, GitHub Actions CI'],
 ];
 
+// Team behind the original research paper this project is based on.
+const TEAM = [
+  { name: 'Aashish Bharti', role: 'Author · Developer' },
+  { name: 'Pukhraj Gond', role: 'Author' },
+  { name: 'Jagriti Pandey', role: 'Author' },
+];
+const GUIDE = { name: 'Ravindra Nath', role: 'Project Guide' };
+const INSTITUTION =
+  'Department of Computer Science, Babasaheb Bhimrao Ambedkar University (BBAU), Lucknow';
+
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -115,6 +125,73 @@ export default function AboutPage() {
                 </div>
               ))}
             </dl>
+          </CardBody>
+        </Card>
+      </section>
+
+      {/* Research & Credits */}
+      <section className="mb-12">
+        <h2 className="mb-4 text-xl font-semibold tracking-tight">Research &amp; credits</h2>
+        <Card>
+          <CardBody className="space-y-6 pt-5">
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              This dashboard is built on the research paper{' '}
+              <em className="text-foreground">
+                “Hidden Markov Model and Future Prediction of Stock Market”
+              </em>
+              , developed by <strong className="text-foreground">Aashish Bharti</strong> and
+              team during their studies at {INSTITUTION}, under the guidance of their
+              professor.
+            </p>
+
+            {/* Guide */}
+            <div>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Under the guidance of
+              </h3>
+              <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 p-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">
+                  {GUIDE.name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold">Prof. {GUIDE.name}</p>
+                  <p className="text-xs text-muted-foreground">{GUIDE.role}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Team */}
+            <div>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Created by Aashish &amp; team
+              </h3>
+              <ul className="grid gap-3 sm:grid-cols-3">
+                {TEAM.map((m) => (
+                  <li
+                    key={m.name}
+                    className="flex items-center gap-3 rounded-lg border border-border p-3"
+                  >
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                      {m.name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{m.name}</p>
+                      <p className="text-xs text-muted-foreground">{m.role}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <p className="border-t border-border pt-4 text-xs text-muted-foreground">
+              {INSTITUTION}. The full paper is included in the project repository as a PDF.
+            </p>
           </CardBody>
         </Card>
       </section>
