@@ -12,5 +12,5 @@ hmmlearn>=0.3.2
 yfinance>=0.2.50
 
 # Utilities
-python-dotenv==1.0.1
+python-dotenv>=1.1.1
 httpx>=0.27
