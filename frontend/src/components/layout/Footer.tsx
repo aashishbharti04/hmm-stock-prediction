@@ -1,4 +1,12 @@
+import Link from 'next/link';
 import { SOCIAL_LINKS, CONTACT_EMAIL, PROJECT_NAME } from '@/lib/site';
+
+const QUICK_LINKS = [
+  { href: '/', label: 'Dashboard' },
+  { href: '/guide', label: 'User Guide' },
+  { href: '/about', label: 'About' },
+  { href: '/contact', label: 'Contact' },
+];
 
 /**
  * Professional site footer: project blurb, contact, social links, copyright,
@@ -9,7 +17,7 @@ export function Footer() {
 
   return (
     <footer className="mt-16 border-t border-border bg-card/40">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-3 lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
         {/* Brand + blurb */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -26,6 +34,25 @@ export function Footer() {
             Hidden Markov Models. Built for learning and research — not financial
             advice.
           </p>
+        </div>
+
+        {/* Quick links */}
+        <div className="space-y-3">
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Navigate
+          </h4>
+          <ul className="space-y-2">
+            {QUICK_LINKS.map((l) => (
+              <li key={l.href}>
+                <Link
+                  href={l.href}
+                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* Contact */}

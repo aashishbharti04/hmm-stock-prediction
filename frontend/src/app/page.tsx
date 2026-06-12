@@ -10,12 +10,12 @@ export default function HomePage() {
           Gaussian Hidden Markov Model · live regime detection
         </span>
         <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-          See the market&apos;s hidden states
+          Hidden Markov Model and Future Prediction of Stock Market
         </h1>
         <p className="mt-3 text-base text-muted-foreground sm:text-lg">
           This dashboard fits a Hidden Markov Model to a stock&apos;s returns to
-          uncover latent regimes — bullish, bearish, and neutral — then projects
-          a short-term forecast with an uncertainty band.
+          uncover latent market regimes — bullish, bearish, and neutral — then
+          projects a short-term price forecast with an uncertainty band.
         </p>
       </section>
 

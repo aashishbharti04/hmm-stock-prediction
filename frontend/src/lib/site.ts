@@ -3,7 +3,12 @@
  * header, footer, and SEO metadata.
  */
 
-export const PROJECT_NAME = 'HMM Stock Prediction';
+/** Full official project name, shown prominently across the dashboard. */
+export const PROJECT_NAME =
+  'Hidden Markov Model and Future Prediction of Stock Market';
+
+/** Compact form for tight spaces (titles, badges, copyright). */
+export const PROJECT_SHORT_NAME = 'HMM Stock Prediction';
 
 export const CONTACT_EMAIL = 'aashish@marketdoctorsonline.com';
 

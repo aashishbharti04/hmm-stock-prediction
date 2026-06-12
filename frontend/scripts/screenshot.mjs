@@ -43,6 +43,14 @@ try {
   await page.screenshot({ path: `${outDir}/dashboard-light.png`, fullPage: true });
   await page.screenshot({ path: `${outDir}/hero-light.png` });
 
+  // Content pages (dark)
+  await setTheme(page, 'dark');
+  for (const route of ['guide', 'about', 'contact']) {
+    await page.goto(`${URL}/${route}`, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(600);
+    await page.screenshot({ path: `${outDir}/page-${route}.png`, fullPage: true });
+  }
+
   // Mobile view (dark)
   const mobile = await browser.newPage({
     viewport: { width: 390, height: 844 },

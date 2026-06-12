@@ -4,7 +4,7 @@ import './globals.css';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { PROJECT_NAME, REPO_URL } from '@/lib/site';
+import { PROJECT_NAME, PROJECT_SHORT_NAME, REPO_URL } from '@/lib/site';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
 const mono = JetBrains_Mono({
@@ -20,8 +20,8 @@ const description =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: `${PROJECT_NAME} — HMM Market Regime Dashboard`,
-    template: `%s · ${PROJECT_NAME}`,
+    default: PROJECT_NAME,
+    template: `%s · ${PROJECT_SHORT_NAME}`,
   },
   description,
   applicationName: PROJECT_NAME,
@@ -37,14 +37,14 @@ export const metadata: Metadata = {
   authors: [{ name: 'Aashish Bharti', url: REPO_URL }],
   openGraph: {
     type: 'website',
-    title: `${PROJECT_NAME} — HMM Market Regime Dashboard`,
+    title: PROJECT_NAME,
     description,
     url: siteUrl,
     siteName: PROJECT_NAME,
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${PROJECT_NAME} — HMM Market Regime Dashboard`,
+    title: PROJECT_NAME,
     description,
   },
   robots: { index: true, follow: true },

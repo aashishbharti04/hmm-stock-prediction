@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📈 HMM Stock Prediction
+# 📈 Hidden Markov Model and Future Prediction of Stock Market
 
 ### Detect hidden market regimes and forecast prices with Hidden Markov Models
 
@@ -73,6 +73,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 - ♿ **Accessible** — semantic landmarks, focus-visible rings, skip link, reduced-motion
 - 🔍 **SEO-ready** — metadata, OpenGraph, robots, sitemap, web manifest
 - 🛟 **Graceful degradation** — built-in demo dataset when the backend is offline
+- 📄 **Multi-page** — Dashboard, User Guide, About, and Contact (with a working contact form)
 - ✅ **Tested & linted** — pytest, ruff, mypy, ESLint, TypeScript strict; CI on every PR
 
 ---
@@ -92,7 +93,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 
 <table>
 <tr>
-<td width="50%"><b>Mobile</b><br/><img src="docs/screenshots/dashboard-mobile.png" alt="HMM dashboard on mobile" width="100%" /></td>
+<td width="50%"><b>Mobile</b><br/><img src="docs/screenshots/dashboard-mobile.png" alt="Dashboard on mobile" width="100%" /></td>
 <td width="50%" valign="top">
 
 **Highlights**
@@ -106,6 +107,14 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 </td>
 </tr>
 </table>
+
+### Pages
+
+| User Guide | Contact |
+|:---:|:---:|
+| <img src="docs/screenshots/page-guide.png" alt="User Guide page" width="100%" /> | <img src="docs/screenshots/page-contact.png" alt="Contact page" width="100%" /> |
+
+The app includes **Dashboard**, **User Guide**, **About**, and **Contact** pages.
 
 </div>
 
@@ -308,6 +317,6 @@ community contributions.
 
 ⭐ **If you find this useful, consider starring the repo!**
 
-© 2026 HMM Stock Prediction. All rights reserved.
+© 2026 Hidden Markov Model and Future Prediction of Stock Market. All rights reserved.
 
 </div>
