@@ -10,7 +10,7 @@ and projects a short-term forecast with an uncertainty band.
 
 [![CI](https://github.com/aashishbharti04/hmm-stock-prediction/actions/workflows/ci.yml/badge.svg)](https://github.com/aashishbharti04/hmm-stock-prediction/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -143,7 +143,7 @@ The app includes **Dashboard**, **User Guide**, **About**, and **Contact** pages
 
 | Layer     | Technologies                                                        |
 |-----------|---------------------------------------------------------------------|
-| Frontend  | Next.js 14 (App Router), TypeScript, Tailwind CSS, Recharts, **TanStack Query**, next-themes |
+| Frontend  | Next.js 16 (App Router), TypeScript, Tailwind CSS, Recharts, **TanStack Query**, next-themes |
 | Backend   | Python, FastAPI, Pydantic, hmmlearn, scikit-learn, NumPy, pandas, yfinance, **prometheus-client** |
 | Infra     | **Docker Compose**, multi-stage Docker images, **Redis** (optional), Makefile |
 | Tooling   | pytest · ruff · mypy · ESLint · Prettier · **Playwright** · **pre-commit** · GitHub Actions |
@@ -153,7 +153,7 @@ The app includes **Dashboard**, **User Guide**, **About**, and **Contact** pages
 
 ## 🚀 Installation
 
-> **Requirements:** Python **3.10–3.12** and Node **18.18+**.
+> **Requirements:** Python **3.10–3.12** and Node **20.9+** (Next.js 16).
 > (Python 3.13/3.14 may force slow source builds of `hmmlearn`/`pydantic-core`.)
 
 ```bash

@@ -1,6 +1,6 @@
 # Frontend — HMM Stock Prediction Dashboard
 
-Next.js 14 (App Router) + TypeScript + Tailwind CSS dashboard for visualizing
+Next.js 16 (App Router) + TypeScript + Tailwind CSS dashboard for visualizing
 Hidden Markov Model market-regime analysis.
 
 ## Quick start

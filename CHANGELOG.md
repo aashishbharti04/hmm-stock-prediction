@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Dependency upgrades** (consolidates the open Dependabot PRs):
+  - Frontend: **Next.js 14 → 16** (Turbopack build; React 18 retained),
+    **ESLint 8 → 9 with flat config** (`eslint.config.mjs`; `next lint` was
+    removed in Next 16, so ESLint is invoked directly), eslint-config-next
+    14 → 16, `@types/node` 20 → 25, next-themes 0.4.4 → 0.4.6, prettier 3.4 → 3.8.
+  - Backend: pandas → 3.x, pytest → 9.x, mypy → 2.x, uvicorn 0.34 → 0.49,
+    pydantic-settings 2.7 → 2.14.
+  - CI actions: checkout v4 → v6, setup-node v4 → v6, setup-python v5 → v6,
+    dependency-review-action v4 → v5.
+  - `ThemeToggle` mount guard rewritten with `useSyncExternalStore` to satisfy
+    React's newer `react-hooks/set-state-in-effect` rule.
+  - Minimum Node bumped to **20.9** (Next.js 16 requirement).
+- ESLint **10** was held back: the `eslint-plugin-react` bundled by
+  eslint-config-next 16 is not yet compatible with the ESLint 10 rule API.
+
 ### Planned
 - Multi-ticker regime comparison view
 - Persisted analysis history
