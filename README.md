@@ -63,18 +63,37 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 
 ## ✨ Features
 
+**Modeling**
+
 - 🧠 **Real HMM engine** — Gaussian HMM via `hmmlearn` (fit, Viterbi decode, forecast)
+- 🎲 **Multi-restart fitting** — N random EM restarts, best-likelihood wins (EM is init-sensitive)
+- 🧪 **Automatic regime-count selection** — choose `n_states` objectively by **BIC/AIC**
+- 📐 **Walk-forward backtesting** — out-of-sample directional accuracy, RMSE & MAPE vs a naive baseline
 - 📊 **Regime detection** — bullish/bearish/neutral states with per-regime stats
-- 🔮 **Forecasting** — multi-step price forecast with a 95% confidence band
-- 🔥 **Transition heatmap** — visualize regime persistence and switching
-- 🌗 **Dark & light mode** — system-aware, no flash of incorrect theme
-- 📱 **Responsive** — mobile, tablet, and desktop layouts
-- ⏳ **Polished states** — loading skeletons, empty states, and error states
-- ♿ **Accessible** — semantic landmarks, focus-visible rings, skip link, reduced-motion
-- 🔍 **SEO-ready** — metadata, OpenGraph, robots, sitemap, web manifest
+- 🔮 **Forecasting** — multi-step price forecast with a 95% mixture-variance band
+
+**Production backend**
+
+- ⚡ **Caching** — TTL/LRU in-memory by default, optional **Redis** for multi-replica
+- 🚦 **Rate limiting** — fixed-window limiter per API key / IP
+- 🔑 **Optional API-key auth** — opt-in `X-API-Key` on mutating endpoints
+- 📈 **Observability** — **Prometheus** `/metrics`, JSON structured logs, per-request correlation IDs
+- 🩺 **Health & readiness probes** — `/health`, `/ready`
+- 🛡️ **Resilient data layer** — retries with backoff + a **circuit breaker** over `yfinance`
+
+**Frontend & UX**
+
+- 🔁 **TanStack Query** — request caching, retries with backoff, cancellation
+- 🔥 **Transition heatmap** + 🌗 **dark/light mode** + 📱 **responsive** layouts
+- ⏳ **Polished states** — loading skeletons, empty & error states
+- ♿ **Accessible** & 🔍 **SEO-ready** (metadata, OpenGraph, robots, sitemap, manifest)
 - 🛟 **Graceful degradation** — built-in demo dataset when the backend is offline
-- 📄 **Multi-page** — Dashboard, User Guide, About, and Contact (with a working contact form)
-- ✅ **Tested & linted** — pytest, ruff, mypy, ESLint, TypeScript strict; CI on every PR
+
+**Engineering**
+
+- 🐳 **Docker Compose** — one command for backend + frontend + Redis, multi-stage images with healthchecks
+- ✅ **Tested & linted** — pytest, ruff, mypy (enforced), ESLint, TS strict, **Playwright E2E**
+- 🔒 **Security CI** — **CodeQL**, **Trivy**, **SBOM**, Dependabot, **pre-commit** (gitleaks)
 
 ---
 
@@ -124,9 +143,11 @@ The app includes **Dashboard**, **User Guide**, **About**, and **Contact** pages
 
 | Layer     | Technologies                                                        |
 |-----------|---------------------------------------------------------------------|
-| Frontend  | Next.js 14 (App Router), TypeScript, Tailwind CSS, Recharts, next-themes |
-| Backend   | Python, FastAPI, Pydantic, hmmlearn, scikit-learn, NumPy, pandas, yfinance |
-| Tooling   | pytest · ruff · mypy · ESLint · Prettier · GitHub Actions · Dependabot |
+| Frontend  | Next.js 14 (App Router), TypeScript, Tailwind CSS, Recharts, **TanStack Query**, next-themes |
+| Backend   | Python, FastAPI, Pydantic, hmmlearn, scikit-learn, NumPy, pandas, yfinance, **prometheus-client** |
+| Infra     | **Docker Compose**, multi-stage Docker images, **Redis** (optional), Makefile |
+| Tooling   | pytest · ruff · mypy · ESLint · Prettier · **Playwright** · **pre-commit** · GitHub Actions |
+| Security  | **CodeQL** · **Trivy** · **SBOM (SPDX)** · gitleaks · Dependabot     |
 
 ---
 
@@ -200,7 +221,17 @@ Configuration is via environment variables. Copy the provided templates and edit
 | `CORS_ORIGINS`          | `http://localhost:3000`  | Comma-separated allowed origins   |
 | `DEFAULT_HIDDEN_STATES` | `3`                      | Default regime count              |
 | `HMM_N_ITER`            | `100`                    | EM iterations                     |
+| `HMM_N_RESTARTS`        | `8`                      | Random EM restarts (best wins)    |
 | `MAX_FORECAST_DAYS`     | `30`                     | Forecast horizon cap              |
+| `CACHE_TTL_SECONDS`     | `900`                    | Result cache TTL                  |
+| `REDIS_URL`             | _(unset)_                | Use Redis cache instead of memory |
+| `RATE_LIMIT_REQUESTS`   | `60`                     | Requests per window per client    |
+| `API_KEYS`              | _(empty)_                | Comma-separated keys; enables auth|
+| `LOG_JSON`              | `false`                  | JSON structured logs (production) |
+| `METRICS_ENABLED`       | `true`                   | Expose Prometheus `/metrics`      |
+
+See [`backend/.env.example`](backend/.env.example) for the full list (retries,
+circuit breaker, model-selection range, etc.).
 
 **Frontend** — `frontend/.env.local` (from `frontend/.env.example`)
 
@@ -215,15 +246,23 @@ Configuration is via environment variables. Copy the provided templates and edit
 
 ## ☁️ Deployment
 
-The tiers deploy independently — e.g. **Vercel** (frontend) + **Docker** on any
-container host (backend):
+**Whole stack with one command** (backend + frontend + Redis):
 
 ```bash
-# Backend
+docker compose up --build
+# Frontend → http://localhost:3000   ·   API docs → http://localhost:8000/docs
+```
+
+Or deploy the tiers independently — e.g. **Vercel** (frontend) + **Docker** on
+any container host (backend):
+
+```bash
 cd backend && docker build -t hmm-api . && docker run -p 8000:8000 hmm-api
 ```
 
-Step-by-step (Vercel, Render, Railway, Fly.io, Cloud Run, VM): [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+Both images are **multi-stage** with non-root users and container **healthchecks**.
+A `Makefile` wraps common tasks (`make help`). Step-by-step hosting guides
+(Vercel, Render, Railway, Fly.io, Cloud Run, VM): [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ---
 

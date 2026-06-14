@@ -19,6 +19,7 @@ _ALLOWED_PERIODS = {
     "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "max",
 }
 _ALLOWED_INTERVALS = {"1d", "1wk", "1mo"}
+_ALLOWED_CRITERIA = {"bic", "aic"}
 
 
 class AnalysisRequest(BaseModel):
@@ -32,6 +33,13 @@ class AnalysisRequest(BaseModel):
     )
     forecast_days: int = Field(
         5, ge=1, le=30, description="Number of future steps to forecast."
+    )
+    auto_select_states: bool = Field(
+        False,
+        description="If true, choose n_states automatically via BIC/AIC.",
+    )
+    selection_criterion: str = Field(
+        "bic", description="Information criterion for auto-selection (bic|aic)."
     )
 
     @field_validator("ticker")
@@ -57,6 +65,23 @@ class AnalysisRequest(BaseModel):
         if v not in _ALLOWED_INTERVALS:
             raise ValueError(f"interval must be one of {sorted(_ALLOWED_INTERVALS)}")
         return v
+
+    @field_validator("selection_criterion")
+    @classmethod
+    def _check_criterion(cls, v: str) -> str:
+        v = v.lower()
+        if v not in _ALLOWED_CRITERIA:
+            raise ValueError(f"selection_criterion must be one of {_ALLOWED_CRITERIA}")
+        return v
+
+
+class BacktestRequest(AnalysisRequest):
+    """Parameters for a walk-forward backtest run."""
+
+    stride: int = Field(5, ge=1, le=20, description="Days between backtest folds.")
+    max_folds: int = Field(
+        40, ge=5, le=120, description="Upper bound on number of folds."
+    )
 
 
 class PricePoint(BaseModel):
@@ -99,6 +124,28 @@ class TransitionMatrix(BaseModel):
     matrix: list[list[float]]
 
 
+class ModelCandidate(BaseModel):
+    """Scores for one candidate regime count during model selection."""
+
+    n_states: int
+    log_likelihood: float
+    aic: float
+    bic: float
+    converged: bool
+
+
+class ModelDiagnostics(BaseModel):
+    """Goodness-of-fit diagnostics for the chosen model."""
+
+    log_likelihood: float
+    aic: float
+    bic: float
+    n_params: int
+    converged: bool
+    selected_by: str | None = None  # "bic" | "aic" | None (user-specified)
+    candidates: list[ModelCandidate] = Field(default_factory=list)
+
+
 class AnalysisResponse(BaseModel):
     """Full payload returned to the dashboard."""
 
@@ -112,13 +159,42 @@ class AnalysisResponse(BaseModel):
     latest_state: int
     latest_state_label: str
     log_likelihood: float
+    diagnostics: ModelDiagnostics
+    cached: bool = False
     prices: list[PricePoint]
     states: list[StateStats]
     transitions: TransitionMatrix
     forecast: list[ForecastPoint]
 
 
+class BacktestPointSchema(BaseModel):
+    date: str
+    actual_close: float
+    predicted_close: float
+    correct_direction: bool
+
+
+class BacktestResponse(BaseModel):
+    """Out-of-sample walk-forward backtest results."""
+
+    ticker: str
+    n_states: int
+    folds: int
+    directional_accuracy: float
+    baseline_accuracy: float
+    rmse: float
+    mape: float
+    points: list[BacktestPointSchema]
+
+
 class HealthResponse(BaseModel):
     status: str
     version: str
     environment: str
+
+
+class ReadinessResponse(BaseModel):
+    status: str
+    hmmlearn: bool
+    cache_backend: str
+    metrics: bool

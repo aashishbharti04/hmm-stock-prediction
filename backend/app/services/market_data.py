@@ -1,15 +1,25 @@
 """Market-data acquisition layer.
 
-Wraps ``yfinance`` behind a small, testable interface. When live data is
-unavailable (offline CI, rate limits, or an unknown ticker) the caller can fall
-back to a deterministic synthetic series so the API and demos stay functional.
+Wraps ``yfinance`` behind a small, testable interface with production-grade
+resilience:
+
+* **Retries with exponential backoff** smooth over transient provider hiccups.
+* **A circuit breaker** stops hammering a provider that is consistently failing
+  (rate-limited / down), failing fast for a cooldown instead.
+
+When live data is unavailable the caller can fall back to a deterministic
+synthetic series so the API and demos stay functional.
 """
 
 from __future__ import annotations
 
+import threading
+import time
+
 import numpy as np
 import pandas as pd
 
+from app.core.config import settings
 from app.core.logging import get_logger
 from app.services.exceptions import DataUnavailableError
 
@@ -19,6 +29,70 @@ logger = get_logger(__name__)
 MIN_OBSERVATIONS = 60
 
 
+class CircuitBreaker:
+    """Trip after N consecutive failures; fail fast during a cooldown window."""
+
+    def __init__(self, threshold: int, cooldown_seconds: float) -> None:
+        self._threshold = threshold
+        self._cooldown = cooldown_seconds
+        self._failures = 0
+        self._opened_at: float | None = None
+        self._lock = threading.Lock()
+
+    @property
+    def is_open(self) -> bool:
+        with self._lock:
+            if self._opened_at is None:
+                return False
+            if time.monotonic() - self._opened_at >= self._cooldown:
+                # Cooldown elapsed — half-open: allow a probe request through.
+                self._opened_at = None
+                self._failures = 0
+                return False
+            return True
+
+    def record_success(self) -> None:
+        with self._lock:
+            self._failures = 0
+            self._opened_at = None
+
+    def record_failure(self) -> None:
+        with self._lock:
+            self._failures += 1
+            if self._failures >= self._threshold and self._opened_at is None:
+                self._opened_at = time.monotonic()
+                logger.warning(
+                    "Market-data circuit breaker OPEN after %d failures",
+                    self._failures,
+                )
+
+
+_breaker = CircuitBreaker(
+    threshold=settings.circuit_breaker_threshold,
+    cooldown_seconds=settings.circuit_breaker_cooldown_seconds,
+)
+
+
+def _download(ticker: str, period: str, interval: str) -> pd.DataFrame:
+    """Single yfinance download attempt; raises on any failure or empty frame."""
+    try:
+        import yfinance as yf
+    except ImportError as exc:  # pragma: no cover - dependency guard
+        raise DataUnavailableError("yfinance is not installed") from exc
+
+    df = yf.download(
+        tickers=ticker,
+        period=period,
+        interval=interval,
+        auto_adjust=True,
+        progress=False,
+        threads=False,
+    )
+    if df is None or df.empty:
+        raise DataUnavailableError(f"No market data found for '{ticker}'.")
+    return df
+
+
 def fetch_history(
     ticker: str,
     period: str = "2y",
@@ -26,29 +100,49 @@ def fetch_history(
 ) -> pd.DataFrame:
     """Fetch OHLCV history for ``ticker`` as a clean, indexed DataFrame.
 
+    Retries transient failures with exponential backoff and respects a circuit
+    breaker so a persistently-failing provider is not hammered.
+
     Raises:
-        DataUnavailableError: if no rows are returned.
+        DataUnavailableError: if data cannot be retrieved after retries, or the
+            circuit breaker is open.
     """
-    try:
-        import yfinance as yf
-    except ImportError as exc:  # pragma: no cover - dependency guard
-        raise DataUnavailableError("yfinance is not installed") from exc
-
-    logger.info("Fetching %s history period=%s interval=%s", ticker, period, interval)
-    try:
-        df = yf.download(
-            tickers=ticker,
-            period=period,
-            interval=interval,
-            auto_adjust=True,
-            progress=False,
-            threads=False,
+    if _breaker.is_open:
+        raise DataUnavailableError(
+            "Market-data provider temporarily unavailable (circuit open)."
         )
-    except Exception as exc:  # noqa: BLE001 - normalize any provider error
-        raise DataUnavailableError(f"Failed to download {ticker}: {exc}") from exc
 
-    if df is None or df.empty:
-        raise DataUnavailableError(f"No market data found for '{ticker}'.")
+    logger.info(
+        "Fetching %s history period=%s interval=%s", ticker, period, interval
+    )
+
+    last_exc: Exception | None = None
+    for attempt in range(1, settings.data_fetch_retries + 1):
+        try:
+            df = _download(ticker, period, interval)
+            _breaker.record_success()
+            break
+        except DataUnavailableError as exc:
+            # An empty frame for a valid request is not a provider fault: don't
+            # trip the breaker or retry an unknown ticker forever.
+            raise exc
+        except Exception as exc:  # noqa: BLE001 - normalize any provider error
+            last_exc = exc
+            logger.warning(
+                "Fetch attempt %d/%d for %s failed: %s",
+                attempt,
+                settings.data_fetch_retries,
+                ticker,
+                exc,
+            )
+            if attempt < settings.data_fetch_retries:
+                time.sleep(settings.data_fetch_backoff_seconds * (2 ** (attempt - 1)))
+    else:
+        _breaker.record_failure()
+        raise DataUnavailableError(
+            f"Failed to download {ticker} after "
+            f"{settings.data_fetch_retries} attempts: {last_exc}"
+        ) from last_exc
 
     # yfinance may return a MultiIndex for single tickers; flatten it.
     if isinstance(df.columns, pd.MultiIndex):

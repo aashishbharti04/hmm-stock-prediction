@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AnalysisParams, AnalysisResponse } from '@/types/analysis';
-import { fetchAnalysis, ApiError } from '@/lib/api';
+import { useState } from 'react';
+import type { AnalysisParams } from '@/types/analysis';
+import { ApiError } from '@/lib/api';
+import { useAnalysis } from '@/lib/hooks';
 import { Card, CardHeader, CardBody } from '@/components/ui/Card';
 import { ChartSkeleton, StatCardSkeleton } from '@/components/ui/Skeleton';
 import { Badge } from '@/components/ui/Badge';
@@ -12,7 +13,8 @@ import { PriceChart } from './PriceChart';
 import { ForecastChart } from './ForecastChart';
 import { StatesTable } from './StatesTable';
 import { TransitionMatrix } from './TransitionMatrix';
-import { EmptyState, ErrorState } from './states';
+import { Diagnostics } from './Diagnostics';
+import { ErrorState } from './states';
 
 const DEFAULT_PARAMS: AnalysisParams = {
   ticker: 'AAPL',
@@ -20,54 +22,26 @@ const DEFAULT_PARAMS: AnalysisParams = {
   interval: '1d',
   n_states: 3,
   forecast_days: 5,
+  auto_select_states: false,
+  selection_criterion: 'bic',
 };
 
-type Status = 'idle' | 'loading' | 'success' | 'error';
-
 export function Dashboard() {
-  const [status, setStatus] = useState<Status>('idle');
-  const [data, setData] = useState<AnalysisResponse | null>(null);
-  const [error, setError] = useState<string>('');
   const [params, setParams] = useState<AnalysisParams>(DEFAULT_PARAMS);
-  const abortRef = useRef<AbortController | null>(null);
-
-  const run = useCallback(async (next: AnalysisParams) => {
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    setParams(next);
-    setStatus('loading');
-    setError('');
-
-    try {
-      const result = await fetchAnalysis(next, {
-        signal: controller.signal,
-        // Degrade gracefully to in-browser sample data if the API is offline.
-        fallbackToSample: true,
-      });
-      setData(result);
-      setStatus('success');
-    } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return;
-      setError(err instanceof ApiError ? err.message : 'Unexpected error.');
-      setStatus('error');
-    }
-  }, []);
-
-  // Run a default analysis on first mount so the dashboard is never empty.
-  useEffect(() => {
-    run(DEFAULT_PARAMS);
-    return () => abortRef.current?.abort();
-  }, [run]);
+  const { data, isLoading, isError, error, isFetching, refetch } =
+    useAnalysis(params);
 
   const isDemo = data?.currency === 'DEMO';
 
   return (
     <div className="space-y-6">
-      <Controls initial={params} loading={status === 'loading'} onSubmit={run} />
+      <Controls
+        initial={params}
+        loading={isFetching}
+        onSubmit={setParams}
+      />
 
-      {isDemo && status === 'success' && (
+      {isDemo && data && (
         <div
           role="status"
           className="rounded-md border border-neutral/30 bg-neutral/10 px-4 py-2.5 text-sm text-foreground"
@@ -78,15 +52,18 @@ export function Dashboard() {
         </div>
       )}
 
-      {status === 'loading' && <LoadingView />}
+      {isLoading && <LoadingView />}
 
-      {status === 'error' && (
-        <ErrorState message={error} onRetry={() => run(params)} />
+      {isError && !data && (
+        <ErrorState
+          message={
+            error instanceof ApiError ? error.message : 'Unexpected error.'
+          }
+          onRetry={() => refetch()}
+        />
       )}
 
-      {status === 'idle' && <EmptyState />}
-
-      {status === 'success' && data && (
+      {data && (
         <div className="animate-fade-in space-y-6">
           <StatCards data={data} />
 
@@ -95,15 +72,24 @@ export function Dashboard() {
               title={`${data.ticker} — Price & Market Regimes`}
               description={`${data.prices.length} sessions · ${data.period} · ${data.n_states} hidden states`}
               action={
-                <Badge className="bg-primary/10 text-primary">
-                  logL {data.log_likelihood.toFixed(1)}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  {data.cached && (
+                    <Badge className="bg-neutral/15 text-muted-foreground">
+                      cached
+                    </Badge>
+                  )}
+                  <Badge className="bg-primary/10 text-primary">
+                    logL {data.log_likelihood.toFixed(1)}
+                  </Badge>
+                </div>
               }
             />
             <CardBody>
               <PriceChart data={data} />
             </CardBody>
           </Card>
+
+          <Diagnostics data={data} />
 
           <div className="grid gap-6 lg:grid-cols-5">
             <Card className="lg:col-span-3">
