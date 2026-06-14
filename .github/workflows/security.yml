@@ -51,15 +51,25 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      # Install the Trivy CLI directly (pinned) rather than via the marketplace
+      # action, avoiding the trivy-action supply-chain advisory entirely.
+      - name: Install Trivy
+        env:
+          TRIVY_VERSION: "0.58.1"
+        run: |
+          curl -sfL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" \
+            -o trivy.tar.gz
+          tar -xzf trivy.tar.gz trivy
+          sudo mv trivy /usr/local/bin/trivy
+          rm trivy.tar.gz
+          trivy --version
       - name: Run Trivy (filesystem)
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: sarif
-          output: trivy-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
+        # exit-code 0 → report, never block the build on findings; results are
+        # surfaced in the Security tab via SARIF.
+        run: |
+          trivy fs --scanners vuln,secret,misconfig \
+            --severity CRITICAL,HIGH --ignore-unfixed \
+            --exit-code 0 --format sarif --output trivy-results.sarif .
       - name: Upload Trivy SARIF
         uses: github/codeql-action/upload-sarif@v3
         if: always()
