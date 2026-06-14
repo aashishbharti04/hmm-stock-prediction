@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import time
 import uuid
 
@@ -21,15 +20,12 @@ REQUEST_ID_HEADER = "X-Request-ID"
 
 
 def _client_key(request: Request) -> str:
-    """Identify the caller for rate-limiting (API key first, then client IP).
+    """Identify the caller for rate-limiting by client IP.
 
-    The API key is hashed so the raw secret is never stored in the limiter's
-    bucket map nor written to logs.
+    We deliberately bucket by IP rather than API key so no credential material
+    is ever stored in the limiter's bucket map or written to logs. Bucketing by
+    IP also prevents one host from multiplying its quota by rotating keys.
     """
-    api_key = request.headers.get("x-api-key")
-    if api_key:
-        digest = hashlib.sha256(api_key.encode()).hexdigest()[:16]
-        return f"key:{digest}"
     client = request.client
     return f"ip:{client.host}" if client else "ip:unknown"
 
