@@ -30,7 +30,7 @@ jobs:
       matrix:
         language: [python, javascript-typescript]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
@@ -50,7 +50,7 @@ jobs:
       security-events: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       # Install the Trivy CLI directly (pinned) rather than via the marketplace
       # action, avoiding the trivy-action supply-chain advisory entirely.
       - name: Install Trivy
@@ -82,7 +82,7 @@ jobs:
     name: Generate SBOM
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Generate SBOM (SPDX)
         uses: anchore/sbom-action@v0
         with:
