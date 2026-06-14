@@ -1,15 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { useTheme } from 'next-themes';
+
+const noopSubscribe = () => () => {};
+
+/** Hydration-safe mount flag: `false` during SSR, `true` on the client — with
+ *  no setState-in-effect (which React's newer lint rules flag). */
+function useMounted() {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+}
 
 /** Accessible light/dark toggle. Renders a stable placeholder until mounted
  *  to avoid a hydration mismatch (theme is only known on the client). */
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   const isDark = resolvedTheme === 'dark';
 

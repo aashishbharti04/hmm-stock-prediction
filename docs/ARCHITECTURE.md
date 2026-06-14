@@ -7,7 +7,7 @@ HMM Stock Prediction is a two-tier application:
 ```
 ┌──────────────────────────┐         HTTPS / JSON         ┌──────────────────────────┐
 │        Frontend          │  ───────────────────────────▶│         Backend          │
-│  Next.js 14 · TypeScript │   POST /api/v1/analyze        │   FastAPI · Python       │
+│  Next.js 16 · TypeScript │   POST /api/v1/analyze        │   FastAPI · Python       │
 │  Tailwind · Recharts     │◀───────────────────────────  │   hmmlearn · yfinance    │
 │                          │      AnalysisResponse         │                          │
 └──────────────────────────┘                              └────────────┬─────────────┘

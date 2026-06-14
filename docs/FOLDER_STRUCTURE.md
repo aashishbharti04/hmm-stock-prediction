@@ -26,7 +26,7 @@ hmm-stock-prediction/
 │   ├── .env.example             # Backend env template
 │   └── README.md
 │
-├── frontend/                    # Next.js 14 dashboard
+├── frontend/                    # Next.js 16 dashboard
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── layout.tsx       # Root layout, SEO metadata, theme provider

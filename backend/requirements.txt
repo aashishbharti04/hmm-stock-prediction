@@ -1,12 +1,12 @@
 # Core API
 fastapi==0.115.6
-uvicorn[standard]==0.34.0
+uvicorn[standard]==0.49.0
 pydantic==2.10.4
-pydantic-settings==2.7.1
+pydantic-settings==2.14.1
 
 # Data & modeling
 numpy>=1.26,<3
-pandas>=2.1
+pandas>=2.3.3
 scikit-learn>=1.4
 hmmlearn>=0.3.2
 yfinance>=0.2.50
