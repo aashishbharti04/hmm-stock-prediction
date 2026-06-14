@@ -24,6 +24,9 @@ export function Controls({
   const [period, setPeriod] = useState(initial.period);
   const [nStates, setNStates] = useState(initial.n_states);
   const [forecastDays, setForecastDays] = useState(initial.forecast_days);
+  const [autoSelect, setAutoSelect] = useState(
+    initial.auto_select_states ?? false,
+  );
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,6 +38,8 @@ export function Controls({
       interval: '1d',
       n_states: nStates,
       forecast_days: forecastDays,
+      auto_select_states: autoSelect,
+      selection_criterion: 'bic',
     });
   }
 
@@ -88,7 +93,8 @@ export function Controls({
           id="states"
           value={nStates}
           onChange={(e) => setNStates(Number(e.target.value))}
-          className={fieldClass}
+          disabled={autoSelect}
+          className={`${fieldClass} disabled:cursor-not-allowed disabled:opacity-50`}
         >
           {STATES.map((s) => (
             <option key={s} value={s}>
@@ -96,6 +102,15 @@ export function Controls({
             </option>
           ))}
         </select>
+        <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={autoSelect}
+            onChange={(e) => setAutoSelect(e.target.checked)}
+            className="h-3.5 w-3.5 rounded border-input"
+          />
+          Auto-select (BIC)
+        </label>
       </div>
 
       <div className="flex flex-col gap-1.5">

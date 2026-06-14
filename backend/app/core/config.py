@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     # --- App metadata ---------------------------------------------------
     app_name: str = "HMM Stock Prediction API"
-    app_version: str = "1.0.0"
+    app_version: str = "2.0.0"
     environment: str = Field(default="development")
     debug: bool = Field(default=False)
 
@@ -44,14 +44,57 @@ class Settings(BaseSettings):
     default_hidden_states: int = 3
     hmm_n_iter: int = 100
     hmm_random_state: int = 42
+    # Number of random EM restarts; the best log-likelihood fit wins. HMM EM is
+    # sensitive to initialisation, so restarts materially improve stability.
+    hmm_n_restarts: int = 8
+    # When auto-selecting the regime count, search this inclusive range.
+    model_selection_min_states: int = 2
+    model_selection_max_states: int = 6
 
-    # --- Rate limiting / safety ----------------------------------------
+    # --- Forecast safety ------------------------------------------------
     max_forecast_days: int = 30
+
+    # --- Caching --------------------------------------------------------
+    # In-process TTL cache by default; set redis_url to use a shared cache.
+    cache_enabled: bool = True
+    cache_ttl_seconds: int = 900  # 15 minutes
+    cache_max_entries: int = 256
+    redis_url: str | None = None
+
+    # --- Rate limiting --------------------------------------------------
+    rate_limit_enabled: bool = True
+    rate_limit_requests: int = 60  # requests per window per client
+    rate_limit_window_seconds: int = 60
+
+    # --- Auth (optional) ------------------------------------------------
+    # When set, mutating analysis endpoints require ``X-API-Key`` to match.
+    # Comma-separated to allow multiple keys (rotation). Empty = auth disabled.
+    api_keys: str = ""
+
+    # --- Observability --------------------------------------------------
+    metrics_enabled: bool = True
+    log_json: bool = False  # set true in production for machine-readable logs
+
+    # --- Market data resilience ----------------------------------------
+    data_fetch_retries: int = 3
+    data_fetch_backoff_seconds: float = 0.5
+    # Circuit breaker: after N consecutive failures, short-circuit for a cooldown.
+    circuit_breaker_threshold: int = 5
+    circuit_breaker_cooldown_seconds: float = 30.0
 
     @property
     def cors_origin_list(self) -> list[str]:
         """Parse the comma-separated CORS origins into a clean list."""
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def api_key_set(self) -> frozenset[str]:
+        """Parse configured API keys into a set (empty means auth disabled)."""
+        return frozenset(k.strip() for k in self.api_keys.split(",") if k.strip())
+
+    @property
+    def auth_enabled(self) -> bool:
+        return bool(self.api_key_set)
 
     @property
     def is_production(self) -> bool:

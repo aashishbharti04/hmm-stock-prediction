@@ -3,6 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  // Emit a self-contained server bundle for a minimal production container.
+  output: 'standalone',
   images: {
     formats: ['image/avif', 'image/webp'],
   },

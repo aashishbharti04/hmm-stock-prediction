@@ -11,6 +11,13 @@ scikit-learn>=1.4
 hmmlearn>=0.3.2
 yfinance>=0.2.50
 
+# Observability
+prometheus-client>=0.21
+
 # Utilities
 python-dotenv>=1.1.1
 httpx>=0.27
+
+# Optional: shared cache. Uncomment (or `pip install redis`) and set REDIS_URL
+# to use Redis instead of the built-in in-memory cache.
+# redis>=5.0

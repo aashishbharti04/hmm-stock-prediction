@@ -16,6 +16,7 @@ __pycache__/
 build/
 dist/
 .venv/
+.venv*/
 venv/
 env/
 ENV/
@@ -44,6 +45,15 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# --- Playwright / E2E -------------------------------------------------------
+playwright-report/
+test-results/
+playwright/.cache/
+
+# --- Security / SBOM artifacts ----------------------------------------------
+sbom.spdx.json
+trivy-results.sarif
 
 # --- Misc -------------------------------------------------------------------
 coverage/

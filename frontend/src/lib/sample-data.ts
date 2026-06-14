@@ -92,6 +92,16 @@ export function buildSampleResponse(ticker = 'DEMO'): AnalysisResponse {
     latest_state: last.state,
     latest_state_label: labels[last.state],
     log_likelihood: 812.34,
+    diagnostics: {
+      log_likelihood: 812.34,
+      aic: -1610.68,
+      bic: -1554.21,
+      n_params: 14,
+      converged: true,
+      selected_by: null,
+      candidates: [],
+    },
+    cached: false,
     prices,
     states: byState.map((b) => ({
       state: b.s,

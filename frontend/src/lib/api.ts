@@ -1,4 +1,9 @@
-import type { AnalysisParams, AnalysisResponse } from '@/types/analysis';
+import type {
+  AnalysisParams,
+  AnalysisResponse,
+  BacktestParams,
+  BacktestResponse,
+} from '@/types/analysis';
 import { buildSampleResponse } from '@/lib/sample-data';
 
 const API_BASE =
@@ -59,4 +64,31 @@ export async function fetchAnalysis(
       0,
     );
   }
+}
+
+/** Request a walk-forward backtest of the one-step forecast. */
+export async function fetchBacktest(
+  params: BacktestParams,
+  options: { signal?: AbortSignal } = {},
+): Promise<BacktestResponse> {
+  const res = await fetch(`${API_BASE}/backtest`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+    signal: options.signal,
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    let detail = `Backtest failed (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data?.detail) detail = String(data.detail);
+    } catch {
+      /* ignore body parse errors */
+    }
+    throw new ApiError(detail, res.status);
+  }
+
+  return (await res.json()) as BacktestResponse;
 }

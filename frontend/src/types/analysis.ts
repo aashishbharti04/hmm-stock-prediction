@@ -37,6 +37,24 @@ export interface TransitionMatrix {
   matrix: number[][];
 }
 
+export interface ModelCandidate {
+  n_states: number;
+  log_likelihood: number;
+  aic: number;
+  bic: number;
+  converged: boolean;
+}
+
+export interface ModelDiagnostics {
+  log_likelihood: number;
+  aic: number;
+  bic: number;
+  n_params: number;
+  converged: boolean;
+  selected_by: string | null;
+  candidates: ModelCandidate[];
+}
+
 export interface AnalysisResponse {
   ticker: string;
   period: string;
@@ -48,6 +66,8 @@ export interface AnalysisResponse {
   latest_state: number;
   latest_state_label: RegimeLabel;
   log_likelihood: number;
+  diagnostics: ModelDiagnostics;
+  cached: boolean;
   prices: PricePoint[];
   states: StateStats[];
   transitions: TransitionMatrix;
@@ -60,4 +80,29 @@ export interface AnalysisParams {
   interval: string;
   n_states: number;
   forecast_days: number;
+  auto_select_states?: boolean;
+  selection_criterion?: 'bic' | 'aic';
+}
+
+export interface BacktestPoint {
+  date: string;
+  actual_close: number;
+  predicted_close: number;
+  correct_direction: boolean;
+}
+
+export interface BacktestResponse {
+  ticker: string;
+  n_states: number;
+  folds: number;
+  directional_accuracy: number;
+  baseline_accuracy: number;
+  rmse: number;
+  mape: number;
+  points: BacktestPoint[];
+}
+
+export interface BacktestParams extends AnalysisParams {
+  stride?: number;
+  max_folds?: number;
 }
