@@ -55,7 +55,7 @@ jobs:
       # action, avoiding the trivy-action supply-chain advisory entirely.
       - name: Install Trivy
         env:
-          TRIVY_VERSION: "0.58.1"
+          TRIVY_VERSION: "0.71.0"
         run: |
           curl -sfL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" \
             -o trivy.tar.gz

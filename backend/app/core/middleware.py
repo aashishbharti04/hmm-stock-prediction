@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import time
 import uuid
 
@@ -20,10 +21,15 @@ REQUEST_ID_HEADER = "X-Request-ID"
 
 
 def _client_key(request: Request) -> str:
-    """Identify the caller for rate-limiting (API key first, then client IP)."""
+    """Identify the caller for rate-limiting (API key first, then client IP).
+
+    The API key is hashed so the raw secret is never stored in the limiter's
+    bucket map nor written to logs.
+    """
     api_key = request.headers.get("x-api-key")
     if api_key:
-        return f"key:{api_key}"
+        digest = hashlib.sha256(api_key.encode()).hexdigest()[:16]
+        return f"key:{digest}"
     client = request.client
     return f"ip:{client.host}" if client else "ip:unknown"
 
@@ -77,7 +83,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         allowed, remaining, retry_after = limiter.check(_client_key(request))
         if not allowed:
-            logger.warning("Rate limit exceeded for %s", _client_key(request))
+            client_ip = request.client.host if request.client else "unknown"
+            logger.warning(
+                "Rate limit exceeded for ip=%s on %s", client_ip, request.url.path
+            )
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Rate limit exceeded. Slow down."},
