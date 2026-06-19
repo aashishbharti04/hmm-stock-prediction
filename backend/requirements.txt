@@ -9,7 +9,7 @@ numpy>=1.26,<3
 pandas>=2.3.3
 scikit-learn>=1.4
 hmmlearn>=0.3.2
-yfinance>=0.2.50
+yfinance>=1.4.1
 
 # Observability
 prometheus-client>=0.21
