@@ -5,7 +5,7 @@ pydantic==2.10.4
 pydantic-settings==2.14.1
 
 # Data & modeling
-numpy>=1.26,<3
+numpy>=2.2.6,<3
 pandas>=2.3.3
 scikit-learn>=1.4
 hmmlearn>=0.3.2
